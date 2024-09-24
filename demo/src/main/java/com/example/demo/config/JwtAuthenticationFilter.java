@@ -31,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader("Authorization");
         final String jwt;
         final String email;
+        // If the Authorization header is missing or does not start with "Bearer ", proceed with the next filter
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -39,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         email = jwtService.extractUsername(jwt);
         // If user already authenticated, do nothing
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Load user details using the username extracted from the token
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
             if (jwtService.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -46,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+        // Continue with the next filter
         filterChain.doFilter(request, response);
     }
     

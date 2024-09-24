@@ -27,6 +27,8 @@ public class ApplicationConfig {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    // A configured DaoAuthenticationProvider with a custom UserDetailsService and PasswordEncoder.
+    // Todo: Learn more about DaoAuthenticationProvider https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/dao-authentication-provider.html
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
