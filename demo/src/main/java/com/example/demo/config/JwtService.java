@@ -13,6 +13,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class JwtService {
@@ -29,6 +30,19 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         return generateToken(Map.of(), userDetails);
+    }
+
+    public String emailFromRequest(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        return extractUsername(token);
+    }
+
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
     }
 
     public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
