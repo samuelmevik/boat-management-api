@@ -1,0 +1,15 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  info:
+    env:
+      enabled: true
+  application:
+    name: demo
+    version: 0.0.1
+    description: '@project.version@'
+spring:
+  profiles:
+    active: dev
