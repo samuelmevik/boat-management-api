@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import java.security.Key;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class JwtService {
 
     // TODO: Move to env variable, bad practice to have it hardcoded, and a security risk.
-    private final String SECRET_KEY = "JKvgeliISHNdpHanR4xxesFj/B6OcFTq6YiqIyjVwADnga27kyqKwqY+IwlUHDqXeDhpZqbV1nQKXhfYh6sVanhaqWvz2kvydWORmDOEukzuQJzxt61cV+unaQGNHlfSHXEaWbBBWm3TbeySclQ/2qhBPErx58w84Lzp4ikdA1sotjQC7QXrV5YktrqgHCIu1sViWqZ9AiwOE5kqcxd63LUirBICmqDi17Ru9KIeUA1lQ9BA56bw34bePxcA/V8OV+f21BFyFyIC26uusfGdq7RhjaN7Q39ER/54sa6FON+lFuecnpJwVt8Gyyo9OzjXy/m97wno9O7T7Hi55CQ9Qx1jmQeA27uzDvSqG0VdbNI=\n";
+    private final Key SIGNING_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -33,15 +33,19 @@ public class JwtService {
         return generateToken(Map.of(), userDetails);
     }
 
-    public String emailFromRequest(HttpServletRequest request) {
-        String token = extractTokenFromRequest(request);
-        return extractUsername(token);
+    public String extractUsernameFromRequest(HttpServletRequest request) {
+        var token = extractTokenFromRequest(request);
+        if (token.isEmpty()) {
+            throw new IllegalStateException("Token not found");
+        }
+        return extractUsername(token.get());
     }
 
-    public String extractTokenFromRequest(HttpServletRequest request) {
+
+    public Optional<String> extractTokenFromRequest(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
+            return Optional.ofNullable(header.substring(7));
         }
         return null;
     }
@@ -82,8 +86,7 @@ public class JwtService {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return SIGNING_KEY;
     }
 
 }

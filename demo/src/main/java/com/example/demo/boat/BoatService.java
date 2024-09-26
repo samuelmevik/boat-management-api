@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.member.Member;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,5 +20,14 @@ public class BoatService {
 
     public Boat createBoat(Boat boat) {
         return boatRepository.save(boat);
+    }
+
+    public void deleteBoat(Long boatId, Member member) {
+        Boat boat = boatRepository.findById(boatId)
+            .orElseThrow(() -> new IllegalStateException("Boat not found"));
+        if (!boat.getMember().equals(member)) {
+            throw new IllegalStateException("Boat does not belong to member");
+        }
+        boatRepository.delete(boat);
     }
 }

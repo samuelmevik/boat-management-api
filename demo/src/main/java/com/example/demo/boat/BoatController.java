@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,13 +31,13 @@ public class BoatController {
 
     @GetMapping
     public ResponseEntity<List<Boat>> getMemberBoats(Object any, HttpServletRequest request) {
-        String email = jwtService.emailFromRequest(request);
+        String email = jwtService.extractUsernameFromRequest(request);
         return ResponseEntity.ok(boatService.getBoats(email));
     }
 
     @PostMapping
     public ResponseEntity<Boat> createBoat(@RequestBody CreateBoatRequest body, HttpServletRequest request) {
-        String email = jwtService.emailFromRequest(request);
+        String email = jwtService.extractUsernameFromRequest(request);
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isEmpty()) {
             throw new IllegalStateException("Member not found");
@@ -46,5 +48,16 @@ public class BoatController {
             .member(member.get())
             .build();
         return ResponseEntity.ok(boatService.createBoat(boat));
+    }
+
+    @DeleteMapping(path = "{boatId}")
+    public ResponseEntity<Void> deleteBoat(@PathVariable("boatId") Long boatId, HttpServletRequest request) {
+        String email = jwtService.extractUsernameFromRequest(request);
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isEmpty()) {
+            throw new IllegalStateException("Member not found");
+        }
+        boatService.deleteBoat(boatId, member.get());
+        return ResponseEntity.ok().build();
     }
 }
